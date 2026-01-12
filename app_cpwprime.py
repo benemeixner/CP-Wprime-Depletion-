@@ -12,21 +12,24 @@ st.write(
     "The app fits the inverse-time model: **P = W'/t + CP**."
 )
 
+def as_int_w(x: float) -> int:
+    return int(round(float(x)))
+
 with st.form("inputs"):
     c1, c2, c3 = st.columns(3)
     with c1:
-        p3 = st.number_input("3-min mean power (W)", min_value=0.0, value=0.0, step=1.0)
+        p3 = st.number_input("3-min mean power (W)", min_value=0, value=0, step=1, format="%d")
     with c2:
-        p5 = st.number_input("5-min mean power (W)", min_value=0.0, value=0.0, step=1.0)
+        p5 = st.number_input("5-min mean power (W)", min_value=0, value=0, step=1, format="%d")
     with c3:
-        p12 = st.number_input("12-min mean power (W)", min_value=0.0, value=0.0, step=1.0)
+        p12 = st.number_input("12-min mean power (W)", min_value=0, value=0, step=1, format="%d")
 
     st.caption("Durations are fixed at 180 s, 300 s, 720 s.")
     submitted = st.form_submit_button("Calculate")
 
 if submitted:
     try:
-        powers = [p3, p5, p12]
+        powers = [as_int_w(p3), as_int_w(p5), as_int_w(p12)]
         durations = [180, 300, 720]
         res = fit_inverse_time_model(powers, durations)
 
@@ -36,7 +39,7 @@ if submitted:
 
         st.subheader("Results")
         m1, m2, m3 = st.columns(3)
-        m1.metric("CP (W)", f"{cp:.1f}")
+        m1.metric("CP (W)", f"{as_int_w(cp)}")          # whole watts
         m2.metric("W' (kJ)", f"{wprime_kj:.2f}")
         m3.metric("Fit R²", f"{res.r2:.3f}" if pd.notna(res.r2) else "n/a")
 
@@ -45,8 +48,8 @@ if submitted:
         p_30 = power_for_fraction_wprime(cp, wprime_j, fraction=0.30, duration_s=180)
 
         r1, r2 = st.columns(2)
-        r1.metric("Power for 70% W' in 3 min (W)", f"{p_70:.1f}")
-        r2.metric("Power for remaining 30% W' in 3 min (W)", f"{p_30:.1f}")
+        r1.metric("Power for 70% W' in 3 min (W)", f"{as_int_w(p_70)}")  # whole watts
+        r2.metric("Power for remaining 30% W' in 3 min (W)", f"{as_int_w(p_30)}")
 
         st.caption(
             "Formula: (P − CP) × duration = fraction × W'  →  P = CP + fraction·W'/duration. "
@@ -56,17 +59,17 @@ if submitted:
         st.subheader("Fit details")
         df = pd.DataFrame({
             "Duration (s)": res.durations_s,
-            "Mean Power (W)": res.powers_w,
-            "Residual (W)": res.residuals_w
+            "Mean Power (W)": [as_int_w(v) for v in res.powers_w],
+            "Residual (W)": [round(v, 2) for v in res.residuals_w],
         })
         st.dataframe(df, use_container_width=True)
 
         st.subheader("Copy-friendly summary")
         st.code(
-            f"CP = {cp:.1f} W\n"
+            f"CP = {as_int_w(cp)} W\n"
             f"W' = {wprime_kj:.2f} kJ\n"
-            f"P(70% W' over 180 s) = {p_70:.1f} W\n"
-            f"P(30% W' over 180 s) = {p_30:.1f} W\n"
+            f"P(70% W' over 180 s) = {as_int_w(p_70)} W\n"
+            f"P(30% W' over 180 s) = {as_int_w(p_30)} W\n"
             f"R² = {res.r2:.3f}",
             language="text"
         )
@@ -75,13 +78,7 @@ if submitted:
         st.error(f"Could not compute CP/W': {e}")
 
 st.divider()
-st.markdown("""### Deploy (Streamlit Community Cloud)
-Repo contents:
-- `app_cpwprime.py`
-- `cp_core.py`
-- `requirements.txt`
-
-Run locally:
+st.markdown("""### Run locally
 ```bash
 pip install -r requirements.txt
 streamlit run app_cpwprime.py

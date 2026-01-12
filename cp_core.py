@@ -5,22 +5,14 @@ Model:
   P = (W' / t) + CP
 Let x = 1/t, y = P  ->  y = W' * x + CP
 
-Inputs:
-  - Mean power (W) for time trials of fixed durations (default 3, 5, 12 min)
-Outputs:
-  - CP in W
-  - W' in J (and kJ)
-  - Fit diagnostics (R², residuals)
-
-Also provides utilities to compute the constant power needed to deplete
-a given fraction of W' over a given duration:
+Also computes constant power required to expend a fraction of W' over a duration:
   (P - CP) * duration = fraction * W'  ->  P = CP + fraction*W'/duration
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Iterable, List, Tuple, Dict
+from typing import Iterable, List, Dict
 
 import numpy as np
 
@@ -39,7 +31,6 @@ def fit_inverse_time_model(
     powers_w: Iterable[float],
     durations_s: Iterable[float],
 ) -> CpWprimeResult:
-    """Fit CP and W' via least squares to P = W'/t + CP."""
     p = np.asarray(list(powers_w), dtype=float)
     t = np.asarray(list(durations_s), dtype=float)
 
@@ -75,13 +66,7 @@ def fit_inverse_time_model(
     )
 
 
-def power_for_fraction_wprime(
-    cp_w: float,
-    wprime_j: float,
-    fraction: float,
-    duration_s: float,
-) -> float:
-    """Constant power (W) required to expend `fraction` of W' over `duration_s`."""
+def power_for_fraction_wprime(cp_w: float, wprime_j: float, fraction: float, duration_s: float) -> float:
     if duration_s <= 0:
         raise ValueError("duration_s must be > 0")
     if fraction < 0:

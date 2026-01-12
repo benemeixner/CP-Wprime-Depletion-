@@ -1,29 +1,12 @@
 # CP & W' Calculator (Inverse-Time Model)
 
-This Streamlit app computes **Critical Power (CP)** and **W'** from mean powers
-in 3-, 5-, and 12-minute time trials using the inverse-time model:
+- Inputs: 3-, 5-, 12-min mean power (whole watts)
+- Outputs: CP (W), W' (kJ), plus target powers to expend 70% and 30% of W' over 3 min each.
 
-> **P = W'/t + CP**
+Model: **P = W'/t + CP** (inverse-time linear model).
 
-It also computes the constant power required to expend:
-- **70% of W'** in **3 minutes**, and then
-- **30% of W'** in another **3 minutes**,
-
-via:
-
-> (P − CP) × duration = fraction × W'  
-> → **P = CP + fraction·W'/duration**
-
-## Files
-- `app_cpwprime.py` – Streamlit UI
-- `cp_core.py` – model + calculations
-- `requirements.txt`
-
-## Local run
+## Run
 ```bash
 pip install -r requirements.txt
 streamlit run app_cpwprime.py
 ```
-
-## Streamlit Cloud
-Create a GitHub repo with these files and deploy using `app_cpwprime.py` as the main file.
